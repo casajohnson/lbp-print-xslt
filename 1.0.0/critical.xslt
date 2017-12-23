@@ -31,7 +31,7 @@
     </xsl:template>
     
     <xsl:template match="/">
-        %this tex file was auto produced from TEI by lombardpress-print on <xsl:value-of  select="current-dateTime()"/> using the  <xsl:value-of select="base-uri(document(''))"/> 
+        %this tex file was auto produced from TEI by lbp-print-xslt 1.0.0 critical stylesheets on <xsl:value-of  select="current-dateTime()"/> using the  <xsl:value-of select="base-uri(document(''))"/> 
         \documentclass[twoside, openright]{report}
         
         % etex package is added to fix bug with eledmac package and mac-tex 2015
@@ -41,7 +41,7 @@
         %imakeidx must be loaded beore eledmac
         \usepackage{imakeidx}
         
-        \usepackage{eledmac}
+        \usepackage{reledmac}
         \usepackage{titlesec}
         \usepackage [latin]{babel}
         \usepackage[style=american] {csquotes}
@@ -82,7 +82,7 @@
         %\foottwocol format the designated apparatus in two columns
         %\foottwocol{B}
         %\footparagraph format the designated apparatus in two a single paragraph
-        \footparagraph{B}
+        %\footparagraph{B}
         \linenummargin{outer}
         \sidenotemargin{inner}
         
@@ -92,6 +92,20 @@
         %custom macros
         \newcommand{\name}[1]{\textsc{#1}}
         \newcommand{\worktitle}[1]{\textit{#1}}
+        
+        
+        
+        
+        \newcommand{\crossref}[2]
+        {
+        \ifnum#1=000
+          #2
+        \else
+          Vide #1
+        \fi
+        }
+        
+        
         
         
         \begin{document}
@@ -115,6 +129,7 @@
         <xsl:variable name="pn"><xsl:number level="any" from="tei:text"/></xsl:variable>
         \pstart
         \ledsidenote{\textbf{<xsl:value-of select="$pn"/>}}
+        \edlabel{http://scta.info/resource/<xsl:value-of select="./@xml:id"/>}
         <xsl:apply-templates/>
         \pend
     </xsl:template>
@@ -164,7 +179,7 @@
         <xsl:if test="count(tokenize(normalize-space(./quote), ' ')) &gt; 10">
             <xsl:text>\lemma{</xsl:text>
             <xsl:value-of select="tokenize(normalize-space(./quote), ' ')[1]"/>
-           <xsl:text> \dots\ </xsl:text>
+           <xsl:text> \dots </xsl:text>
             <xsl:value-of select="tokenize(normalize-space(./quote), ' ')[last()]"/>
             <xsl:text>}</xsl:text>
         </xsl:if>
@@ -179,13 +194,13 @@
 			<xsl:if test="count(tokenize(normalize-space(./ref), ' ')) &gt; 10">
 				<xsl:text>\lemma{</xsl:text>
 				<xsl:value-of select="tokenize(normalize-space(./ref), ' ')[1]"/>
-				<xsl:text> \dots\ </xsl:text>
+				<xsl:text> \dots </xsl:text>
 				<xsl:value-of select="tokenize(normalize-space(./ref), ' ')[last()]"/>
 				<xsl:text>}</xsl:text>
 			</xsl:if>
 			<xsl:text>\Afootnote{</xsl:text>
 			<xsl:apply-templates select="bibl"/>
-			<xsl:text>}}</xsl:text>
+		  <xsl:text>}}</xsl:text>
 		</xsl:template>
     <xsl:template match="ref[bibl]">
         <xsl:text>\edtext{</xsl:text>
@@ -194,7 +209,7 @@
         <xsl:if test="count(tokenize(normalize-space(./seg), ' ')) &gt; 10">
             <xsl:text>\lemma{</xsl:text>
             <xsl:value-of select="tokenize(normalize-space(./seg), ' ')[1]"/>
-            <xsl:text> \dots\ </xsl:text>
+            <xsl:text> \dots </xsl:text>
             <xsl:value-of select="tokenize(normalize-space(./seg), ' ')[last()]"/>
             <xsl:text>}</xsl:text>
         </xsl:if>
@@ -212,7 +227,7 @@
         	<xsl:when test="count(tokenize(normalize-space(./lem), ' ')) &gt; 10">
             <xsl:text>\lemma{</xsl:text>
             <xsl:value-of select="tokenize(normalize-space(./lem), ' ')[1]"/>
-            <xsl:text> \dots\ </xsl:text>
+            <xsl:text> \dots </xsl:text>
             <xsl:value-of select="tokenize(normalize-space(./lem), ' ')[last()]"/>
             <xsl:text>}</xsl:text>
         	</xsl:when>
@@ -253,7 +268,9 @@
         <xsl:apply-templates/>
         <xsl:text>}</xsl:text>
     </xsl:template>
-    
+    <xsl:template match="bibl/ref[@target]">
+      \crossref{\xlineref{<xsl:value-of select="./@target"/>}}{<xsl:apply-templates/>} 
+    </xsl:template>
     <xsl:template match="quote"><xsl:apply-templates/></xsl:template>
     <xsl:template match="rdg"></xsl:template>
     <xsl:template match="app/note"></xsl:template>
@@ -281,6 +298,14 @@
       			</xsl:otherwise>
       		</xsl:choose>
       	</xsl:when>
+        <xsl:when test="./@type='variation-choice'">
+          <xsl:text> \textit{plus lectiones} </xsl:text>
+          <xsl:for-each select="./choice/seg">
+            <xsl:text> </xsl:text> <xsl:value-of select="."/> <xsl:text> </xsl:text>
+          </xsl:for-each>
+          <xsl:value-of select="translate(@wit, '#', '')"/><xsl:text> </xsl:text>
+          
+        </xsl:when>
       	<xsl:when test="./@type='variation-substance'">
       		<xsl:text> </xsl:text><xsl:value-of select="."/><xsl:text> </xsl:text>
       		<xsl:value-of select="translate(@wit, '#', '')"/><xsl:text> </xsl:text>
@@ -289,6 +314,7 @@
       		<xsl:text> </xsl:text><xsl:value-of select="."/><xsl:text> </xsl:text>
       		<xsl:value-of select="translate(@wit, '#', '')"/><xsl:text> </xsl:text>
       	</xsl:when>
+        
       	<!-- begin correction types -->
       	<xsl:when test="./@type='correction-deletion'">
       		<xsl:value-of select="./del"/>
