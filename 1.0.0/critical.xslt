@@ -78,11 +78,13 @@
         \titlespacing\section{0pt}{12pt plus 4pt minus 2pt}{12pt plus 2pt minus 2pt}
         \titleformat{\chapter} {\normalfont\Large\uppercase}{\thechapter}{50pt}{}
         
-        %eledmac settings
-        %\foottwocol format the designated apparatus in two columns
-        %\foottwocol{B}
-        %\footparagraph format the designated apparatus in two a single paragraph
-        %\footparagraph{B}
+        %reledmac settings % these settings change footnotes to run inline as a paragraph, 
+        %change paragraph to twocol, threecol, or normal for different effects
+        \Xarrangement[A]{paragraph}
+        \Xarrangement[B]{paragraph}
+        \Xnotenumfont[A]{\normalfont\bfseries}
+        \Xnotenumfont[B]{\normalfont\bfseries}
+        
         \linenummargin{outer}
         \sidenotemargin{inner}
         
@@ -176,14 +178,17 @@
         <xsl:text>\edtext{\enquote{</xsl:text>
         <xsl:apply-templates select="quote"/>
         <xsl:text>}}{</xsl:text>
-        <xsl:if test="count(tokenize(normalize-space(./quote), ' ')) &gt; 10">
+	       <!-- comments out lemma for quotes and references -->
+        <!--<xsl:if test="count(tokenize(normalize-space(./quote), ' ')) &gt; 10">
             <xsl:text>\lemma{</xsl:text>
             <xsl:value-of select="tokenize(normalize-space(./quote), ' ')[1]"/>
            <xsl:text> \dots </xsl:text>
             <xsl:value-of select="tokenize(normalize-space(./quote), ' ')[last()]"/>
             <xsl:text>}</xsl:text>
-        </xsl:if>
-        <xsl:text>\Afootnote{</xsl:text>
+        </xsl:if>-->
+	       <!-- above is replaced by a blank lemma -->
+	       <xsl:text>\lemma{}</xsl:text>
+	      <xsl:text>\Afootnote[nosep]{</xsl:text>
         <xsl:apply-templates select="bibl"/>
         <xsl:text>}}</xsl:text>
     </xsl:template>
@@ -191,14 +196,15 @@
 			<xsl:text>\edtext{</xsl:text>
 			<xsl:apply-templates select="ref"/>
 			<xsl:text>}{</xsl:text>
-			<xsl:if test="count(tokenize(normalize-space(./ref), ' ')) &gt; 10">
+			<!--<xsl:if test="count(tokenize(normalize-space(./ref), ' ')) &gt; 10">
 				<xsl:text>\lemma{</xsl:text>
 				<xsl:value-of select="tokenize(normalize-space(./ref), ' ')[1]"/>
 				<xsl:text> \dots </xsl:text>
 				<xsl:value-of select="tokenize(normalize-space(./ref), ' ')[last()]"/>
 				<xsl:text>}</xsl:text>
-			</xsl:if>
-			<xsl:text>\Afootnote{</xsl:text>
+			</xsl:if>-->
+		  <xsl:text>\lemma{}</xsl:text>
+			<xsl:text>\Afootnote[nosep]{</xsl:text>
 			<xsl:apply-templates select="bibl"/>
 		  <xsl:text>}}</xsl:text>
 		</xsl:template>
@@ -248,7 +254,10 @@
         <xsl:for-each select="./rdg">
         	<xsl:call-template name="varianttype"/>
         </xsl:for-each>
-        <xsl:text>n</xsl:text><xsl:value-of select="$appnumber"></xsl:value-of><xsl:text>}}</xsl:text>
+       
+      <!-- below adds a numbered to app entries, uncomment if you want number to show -->
+      <!--<xsl:text>n</xsl:text><xsl:value-of select="$appnumber"></xsl:value-of>-->
+        <xsl:text>}}</xsl:text>
     </xsl:template>
     
     <xsl:template match="name">
