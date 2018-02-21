@@ -190,10 +190,11 @@
 	       <xsl:text>\lemma{}</xsl:text>
 	      <xsl:text>\Afootnote[nosep]{</xsl:text>
         <xsl:apply-templates select="bibl"/>
-	      <xsl:if test="./note">
+	      <!-- uncomment belwo to show notes -->
+	      <!--<xsl:if test="./note">
    	      <xsl:text> $\vert$ </xsl:text>
    	      <xsl:apply-templates select="note"/>
-	      </xsl:if>
+	      </xsl:if>-->
         <xsl:text>}}</xsl:text>
     </xsl:template>
 		<xsl:template match="cit[ref]">
@@ -210,10 +211,11 @@
 		  <xsl:text>\lemma{}</xsl:text>
 			<xsl:text>\Afootnote[nosep]{</xsl:text>
 			<xsl:apply-templates select="bibl"/>
-		  <xsl:if test="./note">
+		  <!-- uncomment belwo to show notes -->
+		  <!--<xsl:if test="./note">
   		  <xsl:text> $\vert$ </xsl:text>
   		  <xsl:apply-templates select="note"/>
-		  </xsl:if>
+		  </xsl:if>-->
 		  <xsl:text>}}</xsl:text>
 		</xsl:template>
     
@@ -264,10 +266,11 @@
         <xsl:for-each select="./rdg">
         	<xsl:call-template name="varianttype"/>
         </xsl:for-each>
-        <xsl:if test="./note">
+       <!-- uncomment belwo to show notes -->
+       <!-- <xsl:if test="./note">
           <xsl:text> $\vert$ </xsl:text>
           <xsl:apply-templates select="note"/>
-        </xsl:if>
+        </xsl:if>-->
       <!-- below adds a numbered to app entries, uncomment if you want number to show -->
       <!--<xsl:text>n</xsl:text><xsl:value-of select="$appnumber"></xsl:value-of>-->
         <xsl:text>}}</xsl:text>
