@@ -190,6 +190,10 @@
 	       <xsl:text>\lemma{}</xsl:text>
 	      <xsl:text>\Afootnote[nosep]{</xsl:text>
         <xsl:apply-templates select="bibl"/>
+	      <xsl:if test="./note">
+   	      <xsl:text> $\vert$ </xsl:text>
+   	      <xsl:apply-templates select="note"/>
+	      </xsl:if>
         <xsl:text>}}</xsl:text>
     </xsl:template>
 		<xsl:template match="cit[ref]">
@@ -206,9 +210,14 @@
 		  <xsl:text>\lemma{}</xsl:text>
 			<xsl:text>\Afootnote[nosep]{</xsl:text>
 			<xsl:apply-templates select="bibl"/>
+		  <xsl:if test="./note">
+  		  <xsl:text> $\vert$ </xsl:text>
+  		  <xsl:apply-templates select="note"/>
+		  </xsl:if>
 		  <xsl:text>}}</xsl:text>
 		</xsl:template>
-    <xsl:template match="ref[bibl]">
+    
+  <!--<xsl:template match="ref[bibl]">
         <xsl:text>\edtext{</xsl:text>
         <xsl:apply-templates select="seg"/>
         <xsl:text>}{</xsl:text>
@@ -221,8 +230,9 @@
         </xsl:if>
         <xsl:text>\Afootnote{</xsl:text>
         <xsl:apply-templates select="bibl"/>
+        
         <xsl:text>}}</xsl:text>
-    </xsl:template>
+    </xsl:template>-->
     <xsl:template match="ref"><xsl:apply-templates/></xsl:template>
     <xsl:template match="app">
         <xsl:variable name="appnumber"><xsl:number level="any" from="tei:text"/></xsl:variable>
@@ -245,7 +255,7 @@
     			<xsl:otherwise>
     				<xsl:text>\lemma{</xsl:text>
     				<!-- <xsl:value-of select="./lem"/> -->
-    				<xsl:apply-templates/>
+    				<xsl:apply-templates select="lem"/>
     				<xsl:text>}</xsl:text>
     			</xsl:otherwise>
     			
@@ -254,7 +264,10 @@
         <xsl:for-each select="./rdg">
         	<xsl:call-template name="varianttype"/>
         </xsl:for-each>
-       
+        <xsl:if test="./note">
+          <xsl:text> $\vert$ </xsl:text>
+          <xsl:apply-templates select="note"/>
+        </xsl:if>
       <!-- below adds a numbered to app entries, uncomment if you want number to show -->
       <!--<xsl:text>n</xsl:text><xsl:value-of select="$appnumber"></xsl:value-of>-->
         <xsl:text>}}</xsl:text>
@@ -282,7 +295,7 @@
     </xsl:template>
     <xsl:template match="quote"><xsl:apply-templates/></xsl:template>
     <xsl:template match="rdg"></xsl:template>
-    <xsl:template match="app/note"></xsl:template>
+    <!--<xsl:template match="app/note"></xsl:template>-->
 	
 	<xsl:template name="varianttype">
 		<!-- begin variation types -->
