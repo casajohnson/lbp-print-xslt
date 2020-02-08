@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  version="2.0" xpath-default-namespace="http://www.tei-c.org/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:sctastm="http://scta.info/ns/source-title-map">
+    version="2.0" xpath-default-namespace="http://www.tei-c.org/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0">
+    
+    <xsl:param name="transloc">/Users/jcwitt/Projects/scta/scta-texts/graciliscommentary/pg-b1q1/en_pg-b1q1.xml</xsl:param>
     
     <xsl:param name="apploc"><xsl:value-of select="/TEI/teiHeader/encodingDesc/variantEncoding/@location"/></xsl:param>
     <xsl:param name="notesloc"><xsl:value-of select="/TEI/teiHeader/encodingDesc/variantEncoding/@location"/></xsl:param>
@@ -22,8 +24,7 @@
     <xsl:variable name="fs"><xsl:value-of select="/TEI/text/body/div/@xml:id"/></xsl:variable>
     <xsl:variable name="name-list-file">/Users/jcwitt/Projects/lombardpress/lombardpress-lists/Prosopography.xml</xsl:variable>
     <xsl:variable name="work-list-file">/Users/jcwitt/Projects/lombardpress/lombardpress-lists/workscited.xml</xsl:variable>
-  <xsl:variable name="source-list-file">/Users/jcwitt/Projects/lombardpress/sourceTitleMaps/graciliscommentary.xml</xsl:variable>
-  
+    
     <xsl:output method="text" indent="no"/>
     <!-- <xsl:strip-space elements="*"/> -->
     
@@ -43,10 +44,8 @@
         \usepackage{imakeidx}
         
         \usepackage{reledmac}
-        % adds linked internal references
-        \usepackage[hidelinks]{hyperref}
+        \usepackage{reledpar}
         \usepackage{titlesec}
-        
         \usepackage [latin]{babel}
         \usepackage[style=american] {csquotes}
         \usepackage{geometry}
@@ -76,9 +75,6 @@
         
         %quotes settings
         \MakeOuterQuote{"}
-        
-        %package for angle brackets
-        \usepackage{textcomp}
         
         %title settings
         \titleformat{\section} {\normalfont\scshape}{\thesection}{1em}{}
@@ -124,11 +120,19 @@
         \chapter*{<xsl:value-of select="$title"/>}
         \addcontentsline{toc}{chapter}{<xsl:value-of select="$title"/>}
         
+        \begin{pages}
+        
+        \begin{Leftside}
         <xsl:apply-templates select="//body"/>
+        \end{Leftside}
+        \begin{Rightside}
+        <xsl:apply-templates select="document($transloc)//body"/>
+        \end{Rightside}
+        \end{pages}
+        \Pages
         \end{document}
     </xsl:template>
-    
-    <xsl:template match="div//head">\section*{<xsl:apply-templates/>}</xsl:template>
+    <xsl:template match="div//head">\pstart[\section*{<xsl:apply-templates/>}]\pend</xsl:template>
     <xsl:template match="div//div">
         \bigskip
         <xsl:apply-templates/>
@@ -179,16 +183,10 @@
 		\ledsidenote{<xsl:value-of select="concat($MsI, $number[1],  ./@n)"/>}
 	</xsl:template>
 	
-  <xsl:template match="supplied|corr">\textlangle{}<xsl:apply-templates/>\textrangle{}</xsl:template>
+	<xsl:template match="supplied">[<xsl:apply-templates/>]</xsl:template>
 	
 	<xsl:template match="cit[quote]">
-	  <xsl:variable name="sourceid" select="./quote/@source"/>
-	  <xsl:variable name="source-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:longTitle[1]"/>
-	  <xsl:variable name="topLevelExpression-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:topLevelExpressionTitle[1]"/>
-	  <xsl:variable name="author-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:authorTitle[1]"/>
-	  <xsl:variable name="item-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:itemLevelExpressionTitle[1]"/>
-	  <xsl:variable name="source-title-tokenized" select="tokenize($source-title, ',')"/>
-	      <xsl:text>\edtext{\enquote{</xsl:text>
+        <xsl:text>\edtext{\enquote{</xsl:text>
         <xsl:apply-templates select="quote"/>
         <xsl:text>}}{</xsl:text>
 	       <!-- comments out lemma for quotes and references -->
@@ -208,8 +206,7 @@
    	      <xsl:text> $\vert$ </xsl:text>
    	      <xsl:apply-templates select="note"/>
 	      </xsl:if>-->
-	  <xsl:text>}}</xsl:text><xsl:text>\index[sources]{</xsl:text><xsl:value-of select="concat($author-title, '!', $topLevelExpression-title, '!', $item-title)"/><xsl:text>}</xsl:text>
-	  <!-- TODO UNCOMMENT WHEN YOU WANT TO ADD SOURCES INDEX WITH NEST; Seems like it will only work three nested deep -->
+        <xsl:text>}}</xsl:text>
     </xsl:template>
 		<xsl:template match="cit[ref]">
 			<xsl:text>\edtext{</xsl:text>
@@ -325,7 +322,7 @@
       	<xsl:when test="./@type='variation-present'">
       		<xsl:choose>
       			<xsl:when test="./@cause='repetition'">
-      				<xsl:text> \textit{iterum} </xsl:text>
+      				<xsl:text> \textit{iter} </xsl:text>
       				<xsl:value-of select="translate(@wit, '#', '')"/><xsl:text> </xsl:text>
       			</xsl:when>
       			<xsl:otherwise>
@@ -380,12 +377,6 @@
       		<xsl:value-of select="./subst/del"/><xsl:text> </xsl:text>
       		<xsl:value-of select="translate(@wit, '#', '')"/><xsl:text> </xsl:text>
       	</xsl:when>
-        <xsl:when test="./@type='correction-transposition'">
-          <xsl:text> </xsl:text><xsl:value-of select="./subst/add"/>
-          <xsl:text> \textit{corr. ex} </xsl:text>
-          <xsl:value-of select="./subst/del"/><xsl:text> </xsl:text>
-          <xsl:value-of select="translate(@wit, '#', '')"/><xsl:text> </xsl:text>
-        </xsl:when>
       	<!-- fall back for case where @typ is not given -->
         <xsl:otherwise>
             <xsl:text> </xsl:text><xsl:value-of select="."/><xsl:text> </xsl:text>
