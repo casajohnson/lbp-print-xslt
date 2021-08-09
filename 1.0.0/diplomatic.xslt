@@ -26,8 +26,13 @@
     <!-- <xsl:strip-space elements="*"/> -->
     
     <xsl:template match="text()">
-    <xsl:value-of select="replace(., '\s+', ' ')"/>    
+      <xsl:variable name="newText" select="replace(., '&amp;', ' \\&amp; ')"/>
+      <xsl:variable name="newerText" select="replace($newText, '§', ' \\textsection ')"/>
+      <xsl:value-of select="replace($newerText, '\s+', ' ')"/>
+      <!--<xsl:value-of select="replace(., '\s+', ' ')"/>-->
     </xsl:template>
+    
+  
     
     <xsl:template match="/">
         %this tex file was auto produced from TEI by lombardpress-print on <xsl:value-of  select="current-dateTime()"/> using the  <xsl:value-of select="base-uri(document(''))"/> 

@@ -27,10 +27,15 @@
     <xsl:output method="text" indent="no"/>
     <!-- <xsl:strip-space elements="*"/> -->
     
-    <xsl:template match="text()">
+    <!--<xsl:template match="text()">
     <xsl:value-of select="replace(., '\s+', ' ')"/>    
+    </xsl:template>-->
+    <xsl:template match="text()">
+      <xsl:variable name="newText" select="replace(., '&amp;', ' \\&amp; ')"/>
+      <xsl:variable name="newerText" select="replace($newText, '§', ' \\textsection ')"/>
+      <xsl:value-of select="replace($newerText, '\s+', ' ')"/>      
+      <!--<xsl:value-of select="replace(., '\s+', ' ')"/>-->
     </xsl:template>
-    
     <xsl:template match="/">
         %this tex file was auto produced from TEI by lbp-print-xslt 1.0.0 critical stylesheets on <xsl:value-of  select="current-dateTime()"/> using the  <xsl:value-of select="base-uri(document(''))"/> 
         \documentclass[twoside, openright]{report}
@@ -202,7 +207,10 @@
 	       <!-- above is replaced by a blank lemma -->
 	       <xsl:text>\lemma{}</xsl:text>
 	      <xsl:text>\Afootnote[nosep]{</xsl:text>
-        <xsl:apply-templates select="bibl"/>
+     	  <xsl:choose>
+     	    <xsl:when test="./quote/@source"><xsl:call-template name="crossRef"/></xsl:when>
+     	    <xsl:otherwise><xsl:apply-templates select="bibl"/></xsl:otherwise>
+     	  </xsl:choose>
 	      <!-- uncomment belwo to show notes -->
 	      <!--<xsl:if test="./note">
    	      <xsl:text> $\vert$ </xsl:text>
@@ -212,6 +220,12 @@
 	  <!-- TODO UNCOMMENT WHEN YOU WANT TO ADD SOURCES INDEX WITH NEST; Seems like it will only work three nested deep -->
     </xsl:template>
 		<xsl:template match="cit[ref]">
+		  <xsl:variable name="sourceid" select="./ref/@target"/>
+		  <xsl:variable name="source-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:longTitle[1]"/>
+		  <xsl:variable name="topLevelExpression-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:topLevelExpressionTitle[1]"/>
+		  <xsl:variable name="author-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:authorTitle[1]"/>
+		  <xsl:variable name="item-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:itemLevelExpressionTitle[1]"/>
+		  <xsl:variable name="source-title-tokenized" select="tokenize($source-title, ',')"/>
 			<xsl:text>\edtext{</xsl:text>
 			<xsl:apply-templates select="ref"/>
 			<xsl:text>}{</xsl:text>
@@ -224,13 +238,16 @@
 			</xsl:if>-->
 		  <xsl:text>\lemma{}</xsl:text>
 			<xsl:text>\Afootnote[nosep]{</xsl:text>
-			<xsl:apply-templates select="bibl"/>
+		  <xsl:choose>
+		    <xsl:when test="./quote/@source"><xsl:call-template name="crossRef"/></xsl:when>
+		    <xsl:otherwise><xsl:apply-templates select="bibl"/></xsl:otherwise>
+		  </xsl:choose>
 		  <!-- uncomment belwo to show notes -->
 		  <!--<xsl:if test="./note">
   		  <xsl:text> $\vert$ </xsl:text>
   		  <xsl:apply-templates select="note"/>
 		  </xsl:if>-->
-		  <xsl:text>}}</xsl:text>
+		  <xsl:text>}}</xsl:text><xsl:text>\index[sources]{</xsl:text><xsl:value-of select="concat($author-title, '!', $topLevelExpression-title, '!', $item-title)"/><xsl:text>}</xsl:text>
 		</xsl:template>
     
   <!--<xsl:template match="ref[bibl]">
@@ -307,9 +324,8 @@
         <xsl:apply-templates/>
         <xsl:text>}</xsl:text>
     </xsl:template>
-    <xsl:template match="bibl/ref[@target]">
-      \crossref{\xlineref{<xsl:value-of select="./@target"/>}}{<xsl:apply-templates/>} 
-    </xsl:template>
+  <xsl:template name="crossRef">
+    \crossref{\xlineref{<xsl:value-of select="./quote/@source|./ref/@target"/>}}{<xsl:apply-templates select="bibl"/>}</xsl:template>
     <xsl:template match="quote"><xsl:apply-templates/></xsl:template>
     <xsl:template match="rdg"></xsl:template>
     <!--<xsl:template match="app/note"></xsl:template>-->
